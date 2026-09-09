@@ -1,0 +1,17 @@
+@ai_interview_platform_HostAddress = http://localhost:5098
+
+GET {{ai_interview_platform_HostAddress}}/weatherforecast/
+Accept: application/json
+
+
+POST {{ai_interview_platform_HostAddress}}/interviews
+Content-Type: application/json
+{
+    "date" : "2026-09-02",
+    "id" : 3,
+    "question" : "Tell me about yourself."
+
+
+}
+
+###
