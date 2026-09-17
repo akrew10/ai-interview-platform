@@ -1,10 +1,10 @@
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
-builder.Services.AddHttpClient();
+builder.Services.AddSingleton<InterviewService>();
 
 var app = builder.Build();
 
@@ -17,25 +17,6 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
 
 
 
@@ -71,40 +52,25 @@ app.MapGet("/interviews/{index}", (int index) =>
 })
 .WithName("GetInterviewIndex");
 
-app.MapPost("/interviews", async (UserData data, HttpClient httpClient) =>
+app.MapPost("/interviews", async (UserData data, InterviewService interviewService) =>
 {
-    var prompt = $"""
-        Generate {data.NumberOfQuestions} interview questions for a
-        {data.ExperienceLevel} {data.JobTitle} position at {data.Company}.
+    var result = await interviewService.GenerateInterview(data);
 
-        Interview type: {data.InterviewType}
-
-        Candidate background:
-        {data.CandidateBackground}
-        """;
-
-    // AI API call will go here
-
-    return prompt;
+    return result;
 })
 .WithName("CreateInterview");
 
 app.Run();
 
-record Interview(DateOnly Date, int Id, string? Question)
+public record Interview(DateOnly Date, int Id, string? Question)
 {
 
 }
 
-record UserData(string JobTitle, string ExperienceLevel , string Company, string InterviewType, int NumberOfQuestions, string? CandidateBackground)
+public record UserData(string JobTitle, string ExperienceLevel , string Company, string InterviewType, int NumberOfQuestions, string? CandidateBackground)
 {
     
 
-}
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
 }
 
 
