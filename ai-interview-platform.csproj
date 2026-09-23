@@ -1,10 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>ai_interview_platform</RootNamespace>
+    <UserSecretsId>cf44f8f8-1912-41f5-a806-4a1f5854b77a</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>

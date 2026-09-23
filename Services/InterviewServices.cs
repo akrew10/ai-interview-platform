@@ -6,13 +6,14 @@ public class InterviewService
 {
     private readonly ResponsesClient _client;
 
-    public InterviewService()
+    public InterviewService(IConfiguration configuration)
     {
+        var apiKey = configuration["OPENAI_API_KEY"];
+
         _client = new ResponsesClient(
-            apiKey: Environment.GetEnvironmentVariable("OPENAI_API_KEY")
+            apiKey: apiKey
         );
     }
-
     public async Task<string> GenerateInterview(UserData data)
     {
         var prompt = $"""
