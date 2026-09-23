@@ -107,11 +107,78 @@ pre {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
-.interview-results h2 {
-  margin-top: 0;
-}
+
 @media (max-width: 700px) {
   .form-row {
     grid-template-columns: 1fr;
   }
+}
+
+.interview-results h2 {
+  margin-top: 0;
+  color: #1f2937;
+}
+.interview-results ol {
+  padding-left: 0;
+  list-style: none;
+  counter-reset: question;
+}
+
+.interview-results li {
+  counter-increment: question;
+  position: relative;
+
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 20px 20px 20px 60px;
+  margin-bottom: 16px;
+}
+
+.interview-results li::before {
+  content: counter(question);
+  position: absolute;
+  left: 20px;
+  top: 20px;
+
+  font-size: 18px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.interview-results li strong {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+.question-card {
+  display: flex;
+  gap: 16px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.question-number {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2563eb;
+  min-width: 28px;
+}
+
+.question-content {
+  flex: 1;
+}
+
+.question-content h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+
+.question-content p {
+  margin: 0;
+  line-height: 1.6;
 }

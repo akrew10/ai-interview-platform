@@ -1,6 +1,11 @@
 import { useState } from "react";
-import ReactMarkdown from "react-markdown";
+
 import "./App.css";
+import QuestionCard from "./components/QuestionCard";
+type InterviewQuestion = {
+  category: string;
+  question: string;
+};
 
 function App() {
   const [jobTitle, setJobTitle] = useState("");
@@ -9,12 +14,18 @@ function App() {
   const [interviewType, setInterviewType] = useState("Technical");
   const [numberOfQuestions, setNumberOfQuestions] = useState(5);
   const [candidateBackground, setCandidateBackground] = useState("");
-  const [questions, setQuestions] = useState("");
+  const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
 const handleSubmit = async (event: React.FormEvent) => {
   event.preventDefault();
+
+  if (!jobTitle.trim() || !company.trim()) {
+    setError("Please enter a job title and company.");
+    return;
+  }
+
 
   setLoading(true);
   setError("");
@@ -39,7 +50,7 @@ const handleSubmit = async (event: React.FormEvent) => {
       throw new Error("Failed to generate interview");
     }
 
-    const result = await response.text();
+    const result = await response.json();;
 
     setQuestions(result);
   } catch (error) {
@@ -56,11 +67,12 @@ const handleSubmit = async (event: React.FormEvent) => {
       <form onSubmit={handleSubmit}>
         <div>
           <label>Job Title</label>
-          <input
-            type="text"
-            value={jobTitle}
-            onChange={(event) => setJobTitle(event.target.value)}
-          />
+         <input
+          type="text"
+          value={jobTitle}
+          onChange={(event) => setJobTitle(event.target.value)}
+          required
+        />
         </div>
 
         <div className="form-row">
@@ -79,10 +91,11 @@ const handleSubmit = async (event: React.FormEvent) => {
         <div>
           <label>Company</label>
           <input
-            type="text"
-            value={company}
-            onChange={(event) => setCompany(event.target.value)}
-          />
+              type="text"
+              value={company}
+              onChange={(event) => setCompany(event.target.value)}
+              required
+            />
         </div>
       </div>
 
@@ -126,12 +139,20 @@ const handleSubmit = async (event: React.FormEvent) => {
       </button>
       {error && <p>{error}</p>}
       </form>
-      {questions && (
-      <div className="interview-results">
-      <h2>Your Interview</h2>
-      <ReactMarkdown>{questions}</ReactMarkdown>
-      </div>
-    )}
+      {questions.length > 0 && (
+  <div className="interview-results">
+    <h2>Your Interview</h2>
+
+    {questions.map((question, index) => (
+    <QuestionCard
+      key={index}
+      number={index + 1}
+      category={question.category}
+      question={question.question}
+    />
+  ))}
+  </div>
+)}
     </div>
   );
 }

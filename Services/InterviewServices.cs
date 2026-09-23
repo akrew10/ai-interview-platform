@@ -1,4 +1,6 @@
 using OpenAI.Responses;
+using System.Text.Json;
+using ai_interview_platform.Models;
 
 #pragma warning disable OPENAI001
 
@@ -14,16 +16,37 @@ public class InterviewService
             apiKey: apiKey
         );
     }
-    public async Task<string> GenerateInterview(UserData data)
+    public async Task<List<InterviewQuestion>> GenerateInterview(UserData data)
     {
-        var prompt = $"""
-            Generate {data.NumberOfQuestions} interview questions for a
-            {data.ExperienceLevel} {data.JobTitle} position at {data.Company}.
+        var prompt = $$"""
+            Generate {{data.NumberOfQuestions}} interview questions for a
+            {{data.ExperienceLevel}} {{data.JobTitle}} position at {{data.Company}}.
 
-            Interview type: {data.InterviewType}
+            Interview type: {{data.InterviewType}}
 
             Candidate background:
-            {data.CandidateBackground}
+            {{data.CandidateBackground}}
+
+            Return the response as a JSON array.
+
+            Each question should contain:
+            - "category": a short category describing the question
+            - "question": the actual interview question
+
+            Return only valid JSON.
+            Do not include Markdown, code fences, introductions, or conclusions.
+
+            Example:
+            [
+            {
+                "category": "C#/.NET Fundamentals",
+                "question": "How would you implement an LRU cache in C#?"
+            },
+            {
+                "category": "API Design",
+                "question": "How would you design a simple REST API?"
+            }
+            ]
             """;
 
         ResponseResult response = await _client.CreateResponseAsync(
@@ -31,6 +54,16 @@ public class InterviewService
             prompt
         );
 
-        return response.GetOutputText();
+        var json = response.GetOutputText();
+
+        var questions = JsonSerializer.Deserialize<List<InterviewQuestion>>(
+            json,
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            }
+        );
+
+        return questions ?? [];
     }
 }
