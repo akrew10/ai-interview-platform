@@ -182,3 +182,15 @@ pre {
   margin: 0;
   line-height: 1.6;
 }
+
+.answer-section {
+  margin-top: 20px;
+}
+
+.answer-section textarea {
+  min-height: 180px;
+}
+
+.next-button {
+  margin-top: 16px;
+}

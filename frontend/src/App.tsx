@@ -17,6 +17,8 @@ function App() {
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answer, setAnswer] = useState("");
 
 const handleSubmit = async (event: React.FormEvent) => {
   event.preventDefault();
@@ -53,6 +55,8 @@ const handleSubmit = async (event: React.FormEvent) => {
     const result = await response.json();;
 
     setQuestions(result);
+    setCurrentQuestion(0);
+    setAnswer("");
   } catch (error) {
     setError("Something went wrong. Please try again.");
   } finally {
@@ -143,14 +147,42 @@ const handleSubmit = async (event: React.FormEvent) => {
   <div className="interview-results">
     <h2>Your Interview</h2>
 
-    {questions.map((question, index) => (
+  {questions.length > 0 && (
+  <div className="interview-results">
+    <h2>Your Interview</h2>
+
     <QuestionCard
-      key={index}
-      number={index + 1}
-      category={question.category}
-      question={question.question}
+      number={currentQuestion + 1}
+      category={questions[currentQuestion].category}
+      question={questions[currentQuestion].question}
     />
-  ))}
+
+    <div className="answer-section">
+  <label>Your Answer</label>
+
+      <textarea
+        value={answer}
+        onChange={(event) => setAnswer(event.target.value)}
+        placeholder="Type your answer here..."
+      />
+
+      <button
+        type="button"
+        className="next-button"
+        onClick={() => {
+          if (currentQuestion < questions.length - 1) {
+            setCurrentQuestion(currentQuestion + 1);
+            setAnswer("");
+          }
+        }}
+      >
+        {currentQuestion === questions.length - 1
+          ? "Finish Interview"
+          : "Next Question"}
+      </button>
+    </div>
+  </div>
+)}
   </div>
 )}
     </div>
