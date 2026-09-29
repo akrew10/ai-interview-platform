@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 import "./App.css";
 import QuestionCard from "./components/QuestionCard";
 type InterviewQuestion = {
@@ -74,7 +76,7 @@ const handleSubmit = async (event: React.FormEvent) => {
   setError("");
 
   try {
-    const response = await fetch("http://localhost:5098/interviews", {
+    const response = await fetch(`${API_URL}/interviews`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -113,9 +115,7 @@ const handleFinish = async (completedAnswers: InterviewAnswer[]) => {
   setError("");
 
   try {
-    const response = await fetch(
-      "http://localhost:5098/interviews/complete",
-      {
+    const response = await fetch(`${API_URL}/interviews/complete`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
