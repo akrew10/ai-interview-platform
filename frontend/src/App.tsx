@@ -1,10 +1,31 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import "./App.css";
 import QuestionCard from "./components/QuestionCard";
 type InterviewQuestion = {
   category: string;
   question: string;
+};
+
+type QuestionFeedback = {
+  question: string;
+  answer: string;
+  score: number;
+  strengths: string;
+  improvements: string;
+  feedback: string;
+  suggestedAnswer: string;
+  timeTaken: number;
+};
+
+type InterviewEvaluation = {
+  feedback: QuestionFeedback[];
+};
+
+type InterviewAnswer = {
+  question: string;
+  answer: string;
+  timeTaken: number;
 };
 
 function App() {
@@ -19,6 +40,26 @@ function App() {
   const [error, setError] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answer, setAnswer] = useState("");
+  const [answers, setAnswers] = useState<InterviewAnswer[]>([]);
+  const [completed, setCompleted] = useState(false);
+  const [evaluating, setEvaluating] = useState(false);
+  const [evaluation, setEvaluation] = useState<InterviewEvaluation | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [totalTime, setTotalTime] = useState(0);
+
+  useEffect(() => {
+  if (questions.length === 0 || completed) {
+    return;
+  }
+
+  setElapsedTime(0);
+
+  const timer = setInterval(() => {
+    setElapsedTime((time) => time + 1);
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, [currentQuestion, questions.length, completed]);
 
 const handleSubmit = async (event: React.FormEvent) => {
   event.preventDefault();
@@ -56,11 +97,47 @@ const handleSubmit = async (event: React.FormEvent) => {
 
     setQuestions(result);
     setCurrentQuestion(0);
+    setTotalTime(0);
     setAnswer("");
+    setAnswers([]);
   } catch (error) {
     setError("Something went wrong. Please try again.");
   } finally {
     setLoading(false);
+  }
+};
+
+
+const handleFinish = async (completedAnswers: InterviewAnswer[]) => {
+  setEvaluating(true);
+  setError("");
+
+  try {
+    const response = await fetch(
+      "http://localhost:5098/interviews/complete",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          answers: completedAnswers,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to submit interview");
+    }
+
+    const result: InterviewEvaluation = await response.json();
+
+    setEvaluation(result);
+    setCompleted(true);
+  } catch (error) {
+    setError("Something went wrong submitting the interview.");
+  } finally {
+    setEvaluating(false);
   }
 };
 
@@ -138,18 +215,31 @@ const handleSubmit = async (event: React.FormEvent) => {
           />
         </div>
 
-        <button type="submit" disabled={loading}>
-        {loading ? "Generating Interview..." : "Generate Interview"}
-      </button>
+        <button
+        type="submit"
+          disabled={loading || (questions.length > 0 && !completed) || evaluating}
+        >
+          {loading
+            ? "Generating..."
+            : evaluating
+              ? "Evaluating..."
+              : questions.length > 0 && !completed
+                ? "Interview in Progress"
+                : "Generate Interview"}
+        </button>
       {error && <p>{error}</p>}
       </form>
-      {questions.length > 0 && (
-  <div className="interview-results">
-    <h2>Your Interview</h2>
 
-  {questions.length > 0 && (
+  {questions.length > 0 && !completed && !evaluating && (
   <div className="interview-results">
     <h2>Your Interview</h2>
+    <div className="timer">
+    Time: {Math.floor(elapsedTime / 60)
+      .toString()
+      .padStart(2, "0")}
+    :
+    {(elapsedTime % 60).toString().padStart(2, "0")}
+  </div>
 
     <QuestionCard
       number={currentQuestion + 1}
@@ -170,11 +260,36 @@ const handleSubmit = async (event: React.FormEvent) => {
         type="button"
         className="next-button"
         onClick={() => {
-          if (currentQuestion < questions.length - 1) {
-            setCurrentQuestion(currentQuestion + 1);
-            setAnswer("");
-          }
-        }}
+        if (!answer.trim()) {
+          setError("Please enter an answer before continuing.");
+          return;
+        }
+
+        setError("");
+
+        const current = questions[currentQuestion];
+
+      const updatedAnswers = [
+          ...answers,
+          {
+            question: current.question,
+            answer: answer,
+            timeTaken: elapsedTime,
+          },
+        ];
+
+        setAnswers(updatedAnswers);
+
+        const updatedTotalTime = totalTime + elapsedTime;
+        setTotalTime(updatedTotalTime);
+
+        if (currentQuestion < questions.length - 1) {
+          setCurrentQuestion(currentQuestion + 1);
+          setAnswer("");
+        } else {
+          handleFinish(updatedAnswers);
+        }
+      }}
       >
         {currentQuestion === questions.length - 1
           ? "Finish Interview"
@@ -183,9 +298,89 @@ const handleSubmit = async (event: React.FormEvent) => {
     </div>
   </div>
 )}
+
+{evaluating && (
+  <div className="interview-results">
+    <h2>Evaluating Your Answers...</h2>
+    <p>
+      Our AI is reviewing your responses. This may take a few seconds.
+    </p>
   </div>
 )}
+{completed && !evaluating && evaluation && (
+  <div className="interview-results">
+   <h2>Interview Complete!</h2>
+   <p>Your answers have been evaluated.</p>
+
+    <div className="total-time">
+      <h3>Total Time Taken</h3>
+      <p>
+        {Math.floor(totalTime / 60)
+          .toString()
+          .padStart(2, "0")}
+        :
+        {(totalTime % 60).toString().padStart(2, "0")}
+      </p>
     </div>
+
+    <div className="feedback-list">
+      {evaluation.feedback.map((item, index) => (
+        
+        
+        <div className="feedback-card" key={index}>
+          <h3>
+            Question {index + 1}
+          </h3>
+
+          <p className="feedback-question">
+            {item.question}
+          </p>
+
+          <div className="candidate-answer">
+            <h4>Your Answer</h4>
+            <p>{item.answer}</p>
+          </div>
+
+          <div className="feedback-score">
+            Score: {item.score}/10
+          </div>
+
+          <div className="feedback-time">
+            Time Taken:{" "}
+            {Math.floor(item.timeTaken / 60)
+              .toString()
+              .padStart(2, "0")}
+            :
+            {(item.timeTaken % 60).toString().padStart(2, "0")}
+          </div>
+
+          <div className="feedback-section">
+            <h4>Strengths</h4>
+            <p>{item.strengths}</p>
+          </div>
+
+          <div className="feedback-section">
+            <h4>Areas for Improvement</h4>
+            <p>{item.improvements}</p>
+          </div>
+
+          <div className="feedback-section">
+            <h4>Feedback</h4>
+            <p>{item.feedback}</p>
+          </div>
+
+          <div className="feedback-section">
+            <h4>Suggested Answer</h4>
+            <p>{item.suggestedAnswer}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+  </div>
+
+  
   );
 }
 

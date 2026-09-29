@@ -1,6 +1,8 @@
+using ai_interview_platform.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-var apiKey = builder.Configuration["OPENAI_API_KEY"];
+
+
 
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton<InterviewService>();
@@ -26,42 +28,8 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-//app.UseHttpsRedirection();
 
 
-
-
-
-var questions = new[]
-{
-    "Tell us about yourself.", "Why should we hire you?", "Name a time where you showed leadership.", "Do you have any questions for us?" 
-};
-
-var interview =  Enumerable.Range(1, 2).Select(index =>
-        new Interview
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            index,
-            questions[Random.Shared.Next(questions.Length)]
-        ))
-    .ToArray();
-
-
-app.MapGet("/interview", () =>
-{
- 
-    return interview;
-})
-.WithName("GetInterview");
-
-
-
-app.MapGet("/interviews/{index}", (int index) =>
-{       
-
-    return interview.Where(interview => interview.Id == index);
-})
-.WithName("GetInterviewIndex");
 
 app.MapPost("/interviews", async (UserData data, InterviewService interviewService) =>
 {
@@ -71,18 +39,20 @@ app.MapPost("/interviews", async (UserData data, InterviewService interviewServi
 })
 .WithName("CreateInterview");
 
+app.MapPost("/interviews/complete", async (
+    CompletedInterview interview,
+    InterviewService interviewService) =>
+{
+    var evaluation = await interviewService.EvaluateInterview(
+        interview.Answers
+    );
+
+    return evaluation;
+})
+.WithName("CompleteInterview");
+
 app.Run();
 
-public record Interview(DateOnly Date, int Id, string? Question)
-{
-
-}
-
-public record UserData(string JobTitle, string ExperienceLevel , string Company, string InterviewType, int NumberOfQuestions, string? CandidateBackground)
-{
-    
-
-}
 
 
 

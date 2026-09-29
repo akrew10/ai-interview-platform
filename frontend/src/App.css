@@ -194,3 +194,62 @@ pre {
 .next-button {
   margin-top: 16px;
 }
+
+.feedback-list {
+  margin-top: 24px;
+}
+
+.feedback-card {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.feedback-card h3 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.feedback-question {
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.feedback-score {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.feedback-section {
+  margin-top: 18px;
+}
+
+.feedback-section h4 {
+  margin-bottom: 6px;
+}
+
+.feedback-section p {
+  line-height: 1.6;
+  margin: 0;
+}
+
+.candidate-answer {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 20px;
+}
+
+.candidate-answer h4 {
+  margin: 0 0 6px;
+}
+
+.candidate-answer p {
+  margin: 0;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
