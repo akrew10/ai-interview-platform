@@ -109,6 +109,19 @@ const handleSubmit = async (event: React.FormEvent) => {
   }
 };
 
+const handleNewInterview = () => {
+  setQuestions([]);
+  setAnswers([]);
+  setCurrentQuestion(0);
+  setAnswer("");
+  setCompleted(false);
+  setEvaluating(false);
+  setEvaluation(null);
+  setElapsedTime(0);
+  setTotalTime(0);
+  setError("");
+};
+
 
 const handleFinish = async (completedAnswers: InterviewAnswer[]) => {
   setEvaluating(true);
@@ -145,7 +158,8 @@ const handleFinish = async (completedAnswers: InterviewAnswer[]) => {
     <div>
       <h1>AI Interview Platform</h1>
 
-      <form onSubmit={handleSubmit}>
+      {questions.length === 0 && !evaluating && !evaluation && (
+  <form onSubmit={handleSubmit}>
         <div>
           <label>Job Title</label>
          <input
@@ -229,6 +243,7 @@ const handleFinish = async (completedAnswers: InterviewAnswer[]) => {
         </button>
       {error && <p>{error}</p>}
       </form>
+      )}
 
   {questions.length > 0 && !completed && !evaluating && (
   <div className="interview-results">
@@ -309,7 +324,16 @@ const handleFinish = async (completedAnswers: InterviewAnswer[]) => {
 )}
 {completed && !evaluating && evaluation && (
   <div className="interview-results">
-   <h2>Interview Complete!</h2>
+    <button
+      type="button"
+      className="new-interview-button"
+      onClick={handleNewInterview}
+      
+    >
+      Generate New Interview
+    </button>
+
+    <h2>Interview Complete!</h2>
    <p>Your answers have been evaluated.</p>
 
     <div className="total-time">

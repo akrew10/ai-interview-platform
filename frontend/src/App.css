@@ -253,3 +253,7 @@ pre {
   line-height: 1.6;
   white-space: pre-wrap;
 }
+
+.new-interview-button {
+  margin-bottom: 15px;
+}
